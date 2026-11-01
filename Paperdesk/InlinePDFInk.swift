@@ -330,10 +330,11 @@ struct InlineInkBar: View {
     @Bindable var ink: InlinePDFInk
     var body: some View {
         VStack(spacing: 6) {
-            ViewThatFits {
+            ScrollView(.horizontal) {
                 HStack(spacing: 14) { controls }
-                VStack(spacing: 8) { controls }
+                    .padding(.vertical, 4)
             }
+            .accessibilityLabel("Writing tools")
             #if os(iOS)
                 Text(
                     ink.allowFingerDrawing

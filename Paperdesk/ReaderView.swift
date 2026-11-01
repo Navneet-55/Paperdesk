@@ -360,7 +360,7 @@ struct ReaderView: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                    Image(systemName: "magnifyingglass").foregroundStyle(.secondary).accessibilityHidden(true)
                     TextField("Search PDF", text: $model.query).textFieldStyle(.roundedBorder).onSubmit {
                         model.search()
                     }.onChange(of: model.query) { _, _ in
@@ -372,7 +372,7 @@ struct ReaderView: View {
                 }
                 if model.searching || model.searched {
                     HStack(spacing: 8) {
-                        if model.searching { ProgressView(value: model.searchProgress).frame(width: 45) }
+                        if model.searching { ProgressView(value: model.searchProgress).frame(width: 45).accessibilityLabel("Searching PDF") }
                         if model.searched {
                             Text(
                             model.matches.isEmpty ? "0 results" : "\(model.matchIndex + 1)/\(model.matches.count)"
@@ -444,7 +444,7 @@ struct ReaderView: View {
             Button {
                 studySheet = true
             } label: {
-                Label("Offline Study", systemImage: "book.closed")
+                Label("Offline Study", systemImage: "book.closed").labelStyle(.iconOnly)
             }
             .keyboardShortcut("s", modifiers: [.command, .shift])
             .disabled(model.document == nil || model.saving)
@@ -453,14 +453,14 @@ struct ReaderView: View {
             } label: {
                 Label(
                     model.ink.active ? "Finish writing" : "Write on PDF",
-                    systemImage: "pencil.tip.crop.circle")
+                    systemImage: "pencil.tip.crop.circle").labelStyle(.iconOnly)
             }
             .keyboardShortcut("e", modifiers: [.command, .shift])
             .disabled(model.document == nil || model.saving || model.recognizing || model.editingLocked)
             Button {
                 if compact { notesSheet = true } else { showNotes.toggle() }
             } label: {
-                Label("Notes", systemImage: "square.and.pencil")
+                Label("Notes", systemImage: "square.and.pencil").labelStyle(.iconOnly)
             }
             Menu {
                 Button("Study workspace", systemImage: "bookmark.square") { workspaceSheet = true }
@@ -584,7 +584,7 @@ struct ReaderView: View {
                     Button("Stop OCR") { model.ocrTask?.cancel() }
                 } else {
                     ScrollView {
-                        Text(model.recognizedText).textSelection(.enabled).frame(
+                        Text(model.recognizedText.isEmpty ? "No text recognized. Try another page or a clearer scan." : model.recognizedText).textSelection(.enabled).frame(
                             maxWidth: .infinity, alignment: .leading)
                     }
                     Button("Copy text") {
@@ -600,7 +600,7 @@ struct ReaderView: View {
                         ocrSheet = false
                     }.disabled(model.recognizedText.isEmpty)
                 }
-                Button("Done") { ocrSheet = false }
+                Button("Done") { ocrSheet = false }.keyboardShortcut(.cancelAction)
             }.padding().frame(minWidth: 300, minHeight: 350)
         }
         .alert("Go to page", isPresented: $showJump) {

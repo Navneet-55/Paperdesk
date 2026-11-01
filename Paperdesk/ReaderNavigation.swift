@@ -54,6 +54,10 @@ private struct ReaderThumbnail: View {
                 .background(selected ? Color.accentColor.opacity(0.18) : Color.clear, in: RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Page \(page + 1)")
+        .accessibilityValue(label ?? String(page + 1))
+        .accessibilityAddTraits(selected ? .isSelected : [])
         .task(id: url) {
             label = await PDFPageToolsThumbnailCache.shared.label(url: url, index: page)
             data = try? await PDFPageToolsThumbnailCache.shared.thumbnail(
@@ -77,13 +81,15 @@ struct CompanionReader: View {
                 Spacer()
                 Button { model.go(max(0, model.page - 1)) } label: { Image(systemName: "chevron.left") }
                     .accessibilityLabel("Previous comparison page")
+                    .disabled(model.loading || model.document == nil || model.page <= 0)
                 Text(model.document?.page(at: model.page)?.label ?? String(model.page + 1)).monospacedDigit()
                 Button { model.go(min((model.document?.pageCount ?? 1) - 1, model.page + 1)) } label: { Image(systemName: "chevron.right") }
                     .accessibilityLabel("Next comparison page")
+                    .disabled(model.loading || model.document == nil || model.page + 1 >= (model.document?.pageCount ?? 0))
                 Button("Reload") { Task { await model.reload() } }
             }.font(.caption).padding(8).background(.background)
             Text("Read-only copy · Reload to see saved edits").font(.caption2).foregroundStyle(.secondary)
-            if model.loading { ProgressView() }
+            if model.loading { ProgressView("Opening comparison PDF…") }
             else { PDFCanvas(model: model) }
             if let error = model.error { Text(error).font(.caption).foregroundStyle(.secondary) }
         }

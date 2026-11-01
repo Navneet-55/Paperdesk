@@ -4,11 +4,11 @@ An offline PDF reader, annotation and study app for macOS 14+ and iOS/iPadOS 17+
 
 ## Start
 
-The ready-to-run Mac app is `../Paperdesk.app` beside this project folder. Open it, then import a PDF or choose **Explore a sample**. To develop the app, open `Paperdesk.xcodeproj`, select Paperdesk and My Mac, and press Command-R.
+Open `Paperdesk.xcodeproj`, select Paperdesk and My Mac, and press Command-R. Import a PDF from the library toolbar. Physical-device installation requires your development team and signing configuration; no prebuilt app is promised by this repository.
 
 ## Interface
 
-A cover-based library, floating reader dock and shared Liquid Glass controls keep navigation consistent. The palette adapts to light, dark and increased contrast. Glass falls back to system materials on older systems, and opaque surfaces with Reduce Transparency. Document content remains on a solid readable surface.
+Native library lists, split navigation and a compact reader dock keep documents central. Liquid Glass is limited to compact controls. The palette adapts to light, dark and increased contrast. Glass falls back to system materials on older systems, and opaque surfaces with Reduce Transparency. Document content remains on a solid readable surface.
 
 ## Read, write and organize
 
@@ -29,7 +29,7 @@ A cover-based library, floating reader dock and shared Liquid Glass controls kee
 
 ## Offline Study
 
-Open **Offline Study** from the reader. Choose Document or Current page, then Summary, Key terms, Flashcards or Ask.
+Open **Offline Study** from the reader. Choose Whole document or the current page, then Summary, Terms, Cards or Ask.
 
 The standard mode selects source passages on-device and works without an AI model, account, internet connection or API key. Page links open the cited PDF page. Summaries, cards and answers can be saved into local document notes.
 
@@ -59,9 +59,9 @@ Imports, library loading, PDF opening, hashing, search, OCR and large exports ru
 
 ## Validation and remaining boundaries
 
-See TEST_REPORT.md for the checks run on this build. Independent tests passed on Mac and an iPad simulator, including the real local model on Mac. Study and export services were also exercised with network access denied.
+See [TEST_REPORT.md](TEST_REPORT.md) for current local build/test results and the distinction between source review, earlier checks and outstanding device validation. See [release readiness](AppStore/RELEASE_READINESS.md) for owner-only signing and submission steps.
 
-Physical Apple Pencil pressure, tilt, palm rejection and gestures still need a real iPad test. Standard PDF ink uses an averaged stroke width, which can differ from the Pencil preview. Undo history is bounded and ends when the page editor closes. Signing for physical devices and App Store distribution are not completed.
+Physical Apple Pencil pressure, tilt, palm rejection and gestures still need a real iPad test. Inline pen strokes support pressure-aware segments; the separate annotation editor may flatten Pencil appearance to averaged widths. Undo history is bounded and is not a cross-launch history. Signing for physical devices and App Store distribution are not completed.
 
 ## Development checks
 

@@ -97,9 +97,8 @@ struct PDFPageToolsView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
+            VStack(alignment: .leading, spacing: 8) {
                 Label("\(rows.count) pages", systemImage: "square.stack").font(.headline)
-                Spacer()
                 if !selected.isEmpty { Text("\(selected.count) selected").font(.callout).foregroundStyle(.secondary) }
                 Button(selected.count == rows.count && !rows.isEmpty ? "Deselect all" : "Select all") {
                     selected = selected.count == rows.count ? [] : Set(rows.indices)
@@ -115,13 +114,15 @@ struct PDFPageToolsView: View {
         VStack(spacing: 10) {
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 10) { editButtons }
-                ScrollView(.horizontal, showsIndicators: false) { HStack(spacing: 10) { editButtons } }
+                ScrollView(.horizontal) { HStack(spacing: 10) { editButtons } }
             }
-            HStack {
+            ScrollView(.horizontal) {
+                HStack {
                 Button("Merge PDFs", systemImage: "doc.on.doc") { merging = true }.disabled(!canEdit)
                 Button("Export selected", systemImage: "square.and.arrow.up") { split() }.disabled(!canEdit || selected.isEmpty)
                 Spacer()
                 Button("Undo") { undo() }.disabled(!canEdit || history.isEmpty)
+                }
             }
             Text("Edits are staged until Save. Splitting exports a separate PDF and leaves the library original untouched. Check forms and document bookmarks after merging or duplicating pages.")
                 .font(.caption2).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading)
@@ -234,7 +235,9 @@ private struct PDFPageToolsRowView: View {
             Spacer()
             Image(systemName: selected ? "checkmark.circle.fill" : "circle").foregroundStyle(selected ? PaperdeskPalette.teal : .secondary)
         }.padding(.vertical, 5).contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Page \(position), \(row.label)")
+        .accessibilityValue(row.rotationDelta % 360 == 0 ? "" : "Rotated \((row.rotationDelta % 360 + 360) % 360) degrees")
         .accessibilityAddTraits(selected ? .isSelected : [])
         .task(id: ThumbnailIdentity(url: row.sourceURL, page: row.sourceIndex, rotation: row.rotationDelta)) {
             thumbnail = nil

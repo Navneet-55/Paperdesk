@@ -7,6 +7,7 @@ struct BackupView: View {
     @State private var exportFile: BackupExportItem?
     @State private var exportTask: Task<Void, Never>?
     @State private var exportProgress = 0.0
+    @State private var reportsProgress = false
     @State private var exporting = false
     @State private var importing = false
     @State private var status: String?
@@ -45,8 +46,12 @@ struct BackupView: View {
                         .disabled(busy)
                 }
                 if busy {
-                    ProgressView("Working on library backup…", value: exportProgress)
-                    if exportTask != nil { Button("Stop export") { exportTask?.cancel() } }
+                    if reportsProgress {
+                        ProgressView("Exporting library backup…", value: exportProgress)
+                    } else {
+                        ProgressView("Importing library backup…")
+                    }
+                    if exportTask != nil { Button("Stop") { exportTask?.cancel() } }
                 }
                 if let status { Section { Text(status).foregroundStyle(.secondary) } }
             }
@@ -54,7 +59,7 @@ struct BackupView: View {
             .paperdeskActions()
             .navigationTitle("Library backup")
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() }.disabled(busy) }
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() }.keyboardShortcut(.cancelAction).disabled(busy) }
             }
             #if os(macOS)
                 .frame(minWidth: 480, minHeight: 380)
@@ -74,10 +79,13 @@ struct BackupView: View {
         }
         .fileImporter(isPresented: $folderExport, allowedContentTypes: [.folder]) { folderBackup($0, exporting: true) }
         .fileImporter(isPresented: $folderImport, allowedContentTypes: [.folder, .package]) { folderBackup($0, exporting: false) }
+        .interactiveDismissDisabled(busy)
         .onDisappear { exportTask?.cancel() }
         .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { result in
             Task { @MainActor in
                 busy = true
+                reportsProgress = false
+                status = nil
                 defer { busy = false }
                 do {
                     let url = try result.get()
@@ -113,6 +121,8 @@ struct BackupView: View {
     private func folderBackup(_ result: Result<URL, Error>, exporting: Bool) {
         exportTask = Task {
             busy = true
+            reportsProgress = exporting
+            status = nil
             exportProgress = 0
             defer { busy = false; exportTask = nil }
             do {
@@ -137,6 +147,8 @@ struct BackupView: View {
     private func exportBackup() {
         exportTask = Task { @MainActor in
             busy = true
+            reportsProgress = true
+            status = nil
             exportProgress = 0
             defer {
                 busy = false

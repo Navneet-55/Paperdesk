@@ -106,6 +106,7 @@ struct OfflineStudyView: View {
                 .frame(maxWidth: 760, alignment: .leading)
                 .frame(maxWidth: .infinity)
             }
+            .scrollDismissesKeyboard(.interactively)
             .background { PaperdeskBackdrop() }
             .navigationTitle("Offline Study")
             .toolbar {

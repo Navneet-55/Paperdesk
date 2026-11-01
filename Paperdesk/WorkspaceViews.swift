@@ -13,7 +13,7 @@ struct WorkspacePanel: View {
                     Label("Study workspace", systemImage: "bookmark.square")
                         .font(.headline)
                     Spacer()
-                    if store.isSaving { ProgressView().controlSize(.small) }
+                    if store.isSaving { ProgressView("Saving workspace…").controlSize(.small) }
                     Button { Task { await store.load() } } label: { Image(systemName: "arrow.clockwise") }
                         .accessibilityLabel("Reload workspace").help("Reload changes from other windows").disabled(store.isSaving || store.isLoading)
                 }
@@ -186,7 +186,7 @@ struct WorkspaceReviewView: View {
                         }
                     }.disabled(store.isSaving)
                     if let status { Text(status).font(.caption).foregroundStyle(.secondary) }
-                    Text("Try an answer before revealing the source. Grade your recall to schedule the next review. From selection adds up to 12 passages from the first 120,000 characters.").font(.caption).foregroundStyle(.secondary)
+                    Text("Try an answer before revealing the source. Grade your recall to schedule the next review. From selection creates up to 12 cards.").font(.caption).foregroundStyle(.secondary)
                 }
                 Section("Due now · \(due.count)") {
                     if let card = due.first {
@@ -262,6 +262,7 @@ private struct WorkspaceTextSheet: View {
     let initialText: String
     let context: String
     let save: (String) async throws -> Void
+    @FocusState private var editorFocused: Bool
     @State private var text: String
     @State private var saving = false
     @State private var error: String?
@@ -271,13 +272,13 @@ private struct WorkspaceTextSheet: View {
     }
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 12) {
+            Form {
                 if !context.isEmpty { Text(context).font(.caption).foregroundStyle(.secondary).lineLimit(6) }
                 Text(fieldLabel).font(.headline)
-                TextEditor(text: $text).frame(minHeight: 160).accessibilityLabel(fieldLabel)
-                if let error { Text(error).font(.caption).foregroundStyle(.red) }
+                TextEditor(text: $text).frame(minHeight: 160).accessibilityLabel(fieldLabel).focused($editorFocused)
+                if let error { Label(error, systemImage: "exclamationmark.circle").font(.caption).foregroundStyle(.primary) }
                 HStack {
-                    Button("Cancel", role: .cancel) { dismiss() }.disabled(saving)
+                    Button("Cancel", role: .cancel) { dismiss() }.keyboardShortcut(.cancelAction).disabled(saving)
                     Spacer()
                     Button(saving ? "Saving…" : "Save") {
                         saving = true
@@ -285,10 +286,11 @@ private struct WorkspaceTextSheet: View {
                             do { try await save(text); dismiss() }
                             catch { self.error = error.localizedDescription; saving = false }
                         }
-                    }.disabled(saving || text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty).paperdeskProminentAction()
+                    }.disabled(saving || text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty).paperdeskProminentAction().keyboardShortcut(.return, modifiers: .command)
                 }.paperdeskActions()
-            }.padding(20).navigationTitle(title)
+            }.formStyle(.grouped).navigationTitle(title)
                 .frame(idealWidth: 460, idealHeight: 330)
+                .task { editorFocused = true }
                 .interactiveDismissDisabled(saving || text != initialText)
         }
     }
@@ -299,6 +301,7 @@ private struct WorkspaceCardSheet: View {
     let save: (String, String) async throws -> Void
     let originalQuestion: String
     let originalAnswer: String
+    @FocusState private var promptFocused: Bool
     @State private var question: String
     @State private var answer: String
     @State private var saving = false
@@ -311,14 +314,14 @@ private struct WorkspaceCardSheet: View {
     }
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 12) {
+            Form {
                 Text("Prompt").font(.headline)
-                TextEditor(text: $question).frame(minHeight: 70).accessibilityLabel("Card prompt")
+                TextEditor(text: $question).frame(minHeight: 70).accessibilityLabel("Card prompt").focused($promptFocused)
                 Text("Answer from the source").font(.headline)
                 TextEditor(text: $answer).frame(minHeight: 130).accessibilityLabel("Card answer")
-                if let error { Text(error).font(.caption).foregroundStyle(.red) }
+                if let error { Label(error, systemImage: "exclamationmark.circle").font(.caption).foregroundStyle(.primary) }
                 HStack {
-                    Button("Cancel", role: .cancel) { dismiss() }.disabled(saving)
+                    Button("Cancel", role: .cancel) { dismiss() }.keyboardShortcut(.cancelAction).disabled(saving)
                     Spacer()
                     Button(saving ? "Saving…" : "Save card") {
                         saving = true
@@ -326,10 +329,11 @@ private struct WorkspaceCardSheet: View {
                             do { try await save(question, answer); dismiss() }
                             catch { self.error = error.localizedDescription; saving = false }
                         }
-                    }.disabled(saving || question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || answer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty).paperdeskProminentAction()
+                    }.disabled(saving || question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || answer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty).paperdeskProminentAction().keyboardShortcut(.return, modifiers: .command)
                 }.paperdeskActions()
-            }.padding(20).navigationTitle("Review card")
+            }.formStyle(.grouped).navigationTitle("Review card")
                 .frame(idealWidth: 460, idealHeight: 440)
+                .task { promptFocused = true }
                 .interactiveDismissDisabled(saving || question != originalQuestion || answer != originalAnswer)
         }
     }

@@ -95,7 +95,7 @@ struct PaperdeskHelpView: View {
                 Section("Keyboard shortcuts") {
                     LabeledContent("Import PDF", value: "⌘O")
                     LabeledContent("Offline Study", value: "⇧⌘S")
-                    LabeledContent("Edit page", value: "⇧⌘E")
+                    LabeledContent("Write on PDF", value: "⇧⌘E")
                     LabeledContent("Answer study question", value: "⌘Return")
                     LabeledContent("Toggle on-device AI in Ask", value: "⇧⌘M")
                 }

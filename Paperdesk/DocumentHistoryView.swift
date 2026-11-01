@@ -14,19 +14,19 @@ struct DocumentHistoryView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
+            List {
                 VStack(alignment: .leading, spacing: 8) {
                     Label(documentID == nil ? "Recover removed documents" : "Earlier versions", systemImage: "clock.arrow.circlepath").font(.headline)
                     Text("Recovery creates a new library document. Your current document and the saved recovery copy stay unchanged.").font(.subheadline).foregroundStyle(.secondary)
                     if documentID != nil {
                         Text("Local checkpoints are made at most once every five minutes. Up to 10 checkpoints and a 100 MB target are retained per document, always keeping the newest full checkpoint even if it is larger. Older checkpoints may be removed after a new one succeeds. History is not included in library backup exports.").font(.caption).foregroundStyle(.secondary)
                     }
-                }.padding(.horizontal, 16)
+                }
                 if loading { ProgressView("Reading local history…").frame(maxWidth: .infinity, maxHeight: .infinity) }
                 else if versions.isEmpty && removed.isEmpty {
                     ContentUnavailableView(documentID == nil ? "No recovery copies" : "No checkpoints yet", systemImage: "clock", description: Text(documentID == nil ? "Removed documents with a readable saved PDF will appear here." : "Edit notes or annotations to start a local history. Your current document is safe."))
                 } else {
-                    List {
+                    Group {
                         ForEach(versions) { version in
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(version.createdAt.formatted(date: .abbreviated, time: .shortened)).font(.headline)
@@ -43,13 +43,13 @@ struct DocumentHistoryView: View {
                                 Button("Recover as new document") { recover(snapshot) }.paperdeskActions().disabled(busy)
                             }.padding(.vertical, 8)
                         }
-                    }.listStyle(.plain)
+                    }
                 }
                 if busy { ProgressView("Restoring a separate copy…") }
                 if let status { Text(status).font(.callout).foregroundStyle(.secondary) }
             }
             .navigationTitle(documentID == nil ? "Recovery" : "Version history")
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() }.disabled(busy) } }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() }.keyboardShortcut(.cancelAction).disabled(busy) } }
             .interactiveDismissDisabled(busy)
             .task { await reload() }
             .alert("Recovery could not be completed", isPresented: Binding(get: { failure != nil }, set: { if !$0 { failure = nil } })) { Button("OK") { failure = nil } } message: { Text(failure ?? "") }

@@ -31,7 +31,7 @@ Updated 1 November 2026. This is a release checklist for the current local app, 
 
 Drawing save ordering now uses an in-app monotonic revision counter. No `DispatchTime` or system-uptime API remains in the app source; no system-boot-time reason is declared.
 
-The manifest is integrated once in Copy Bundle Resources and verified inside both unsigned archives. macOS entitlements apply only to the macOS SDK; iOS has no macOS sandbox entitlement file. The empty collection array does not replace the separate App Store Connect privacy questionnaire. The publisher must confirm the final signed binary and any partner practices.
+The manifest is integrated in Copy Bundle Resources. Earlier archive inspections are historical evidence; inspect the final signed archives again before submission. macOS entitlements apply only to the macOS SDK; iOS has no macOS sandbox entitlement file. The empty collection array does not replace the separate App Store Connect privacy questionnaire. The publisher must confirm the final signed binary and any partner practices.
 
 Apple primary references:
 
@@ -48,19 +48,19 @@ Apple primary references:
 - macOS sandbox, user-selected file read/write and hardened runtime configured; no incoming/outgoing network entitlement.
 - Privacy resource bundled on both platforms; macOS entitlements are configuration-only, not copied resources.
 - iPhone/iPad device families; minimum macOS 14 and iOS 17. Real glass is available on newer systems; older systems use materials and Reduce Transparency uses opaque chrome.
-- Unsigned macOS universal (Apple silicon and Intel) and iOS device archives compile successfully. Unsigned archives are local verification artifacts, not uploadable distribution builds.
+- Earlier unsigned archive checks do not certify the current sources. Current build and test evidence is recorded in TEST_REPORT.md; new signed Release archives are required for submission.
 
 The owner still must register a production bundle ID and team, create signing credentials, archive with signing enabled, validate in Organizer and test that signed build. The current `com.local.Paperdesk` is provisional. No signing identity was installed during verification.
 
 ## Local verification completed
 
-The 1 November integrated source passed 48 Mac tests across 10 suites and a generic iOS Simulator build. Dedicated 10,000-page native-text and mixed-content fixtures passed cold and cached search checks; a 1,000-page durable OCR fixture passed resume/export/backup checks. Earlier unsigned Release archives and bundled privacy manifests passed, but those archives must be refreshed and signed after the production team and bundle ID are supplied. See TEST_REPORT.md for timings and hardware/visual-review limitations.
+The 1 November 2026 production-polish pass built and tested locally as recorded in TEST_REPORT.md. The Mac run reported 48 passed and zero failed. Source review covered all SwiftUI screens; it is not a completed live accessibility or physical-device audit. Earlier 10,000-page search measurements and 1,000-page OCR fixture checks were not rerun during this UI pass. No persistence or indexing algorithms were changed.
 
 Back up any prototype library before moving to a signed sandboxed build or changing the bundle identifier: the production container may differ. Restore the exported backup through Library options after installing the signed build.
 
 ## Evidence to collect before submission
 
-Run Release builds, XCTest, and the existing integration scripts on the final sources; record actual results in TEST_REPORT.md. Test on physical iPhone/iPad for Pencil pressure, double-tap/squeeze, background-save completion, and handwriting persistence. Verify the system-model unavailable state and extractive fallback, accessibility with VoiceOver, keyboard use, Dynamic Type, Reduce Transparency, light/dark appearance, and smallest supported device layouts.
+Run signed Release builds, the Swift Testing suite, and the existing integration scripts on the final sources; record actual results in TEST_REPORT.md. Test on physical iPhone/iPad for Pencil pressure, double-tap/squeeze, background-save completion, and handwriting persistence. Verify the system-model unavailable state and extractive fallback, accessibility with VoiceOver, keyboard use, Dynamic Type, Reduce Transparency, light/dark appearance, and smallest supported device layouts.
 
 Use a large PDF and a scanned PDF to verify bounded UI work, cancellation, progress, and memory. Reopen after notes, annotations, OCR, rename, removal, export, and backup restore. Test failed writes and malformed backup handling. Check that normal export preserves expected interactive PDF elements, while searchable export clearly discloses flattening. Confirm review copy contains no copyrighted user PDFs or personal notes.
 

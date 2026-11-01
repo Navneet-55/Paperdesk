@@ -482,7 +482,9 @@ struct PDFPageEditor: View {
                 Text(failure ?? "")
             }
         }
+        #if os(macOS)
         .frame(minWidth: 320, minHeight: 480)
+        #endif
     }
     private var hasPendingInk: Bool {
         #if os(iOS)
@@ -572,6 +574,8 @@ struct PDFPageEditor: View {
                         HStack {
                             Text("Width")
                             Slider(value: $width, in: 1...12)
+                                .accessibilityLabel("Pen width")
+                                .accessibilityValue("\(Int(width)) points")
                             Text("\(Int(width))").monospacedDigit()
                         }
                     #else

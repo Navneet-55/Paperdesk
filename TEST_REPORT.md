@@ -1,60 +1,45 @@
-# Feature integration verification — 1 November 2026
+# Paperdesk local verification — 1 November 2026
 
-- UI refinement pass: the library and reader now use a native Apple-style hierarchy with standard split navigation, compact list rows, system typography and restrained glass only around compact controls. The oversized marketing hero and decorative document cards were removed. Mac launch inspection confirmed the calmer list-based library layout.
+This report supersedes the earlier rolling reports. Local compilation and tests are not App Store approval, physical Pencil certification, or a completed visual/accessibility audit.
 
-- Xcode Coding Assistant implemented and reviewed the final annotation-save and reader integration changes. The Mac native suite passed **48 tests in 10 suites**, including 10 new integration regressions; zero failures.
-- The generic iOS Simulator build passed after correcting a cross-platform color-alpha call. This validates iPhone/iPad compilation, but is not a physical Apple Pencil certification.
-- Normal writing remains inline in the PDF reader. Zoom and pan remain available while writing; annotation-only page snapshots prevent image-heavy page artwork from being serialized for each ink save.
-- Added inline stroke eraser, lasso selection, move/resize/recolor/delete, pressure-aware pen segments, highlighter, explicit shapes and hold-to-shape recognition. Journal saves are per-page with stale-revision protection; materialized and searchable exports include pending ink.
-- Added bounded nearby-page thumbnails, bookmarks, region-linked notes, editable spaced-repetition cards, document revision metadata, page organization, version history/recovery, folder backups, side-by-side reading and offline handwriting recognition/search.
-- A synthetic **10,000-page, 18 MB mixed-content PDF** with raster images, vector graphs, tables, technical units, rotated pages and landscape foldouts passed exact search in **3.356 s** on a cold index and **0.076 s** from cache on this Mac. A separate 10,000-page text fixture measured **2.513 s** cold and **0.075 s** cached. These measurements verify bounded indexing/search behavior; they do not guarantee zero frame drops for every PDF or device.
-- A 1,000-page durable OCR fixture passed resume, page 999 lookup, native/OCR spatial deduplication, full searchable export, SQLite snapshot/rebase and stale-generation rejection. Handwriting indexing now reuses one PDF snapshot and writes its cache once per operation instead of once per page.
-- New regressions verify image/vector/text/link preservation, annotation-only snapshots, journal revision conflicts, searchable export with journal ink, lasso/eraser/shapes/pressure, folder-backup roundtrip and corruption rejection, safe live SQLite removal, and consolidation preserving the current page.
-- Runtime source and entitlements contain no cloud API client, API key, analytics SDK or network entitlement. The optional Apple system language model and Vision/PencilKit recognition remain on-device.
-- Remaining release checks: physical iPad Pencil pressure/tilt/palm rejection/double-tap/squeeze, live accessibility review, signed device/TestFlight testing, production bundle ID/team, and hosted support/privacy URLs.
+## Current results
 
----
+| Check | Result |
+|---|---|
+| Xcode Coding Assistant build, My Mac | Passed; no application-source compiler errors or warnings |
+| Generic iOS device build, arm64, signing disabled | Passed; no application-source compiler errors or warnings |
+| Xcode Mac Swift Testing run | 48 passed, 0 failed; the current result bundle contains 48 test cases |
+| Patch whitespace check | `git diff --check` passed |
 
-# Inline handwriting fix — 31 October 2026
+The Mac tests include inline writing/zoom/reopen, undo/redo, stale-save protection, image/vector/link preservation, pressure/highlighter/shapes, lasso and eraser, pending journal export, folder backup, removal safety, workspace cards/notes/bookmarks, recovery and the actual Apple on-device model with verified citations. No new tests were added for presentation-only changes.
 
-- Write on PDF now activates native PDFKit page overlays in the existing reader. It does not present PDFPageEditor or a page preview. PDFKit continues to own page navigation, scrolling and zoom transforms.
-- Mac: 25 native tests passed. iPad simulator: 30 native tests passed, including three new inline-ink regression tests.
-- New checks verify identical page coordinates at 0.75×, 1× and 2.5× zoom, saved ink after reopening, persistent undo/redo, and stale-save rejection that retains visible ink and pending retry.
-- Actual Mac UI check: activated Write, drew a mouse-drag scribble on the visible PDF, saw Saved, zoomed in while Write remained active, and undid the test stroke. No page-preview popup appeared.
-- Annotation/OCR integration tests passed after extracting the shared ink-annotation factory.
-- Inline strokes use the selected fixed PDF pen width. Physical Apple Pencil input, palm rejection and pinch gestures still require a real iPad test; simulator/unit checks do not certify that hardware behavior.
-- Inline ink autosaves serially; strokes arriving during a write queue another page save. Failed saves preserve visible pending ink and show an explicit retry. Exports wait for pending ink to save. iOS final flushes acquire a background-save lifetime.
+Both builds emit the tooling notice “Metadata extraction skipped, no AppIntents.framework dependency found.” Paperdesk has no App Intents integration; this is not a Swift source warning. Initial restricted-shell builds failed because the sandbox prevented Swift macro plugins from responding. Xcode compiled successfully, and an unrestricted unsigned generic iOS build succeeded. A signed generic iOS attempt stopped because no development team is configured; signing remains an owner step.
 
----
+## Source audit and concrete changes
 
-# Paperdesk verification — 30 October 2026
+Reviewed the library/sidebar/overview, reader/search/dock, comparison reader/thumbnails, inline writing toolbar, annotation inspector, handwritten notebook, OCR sheet, document notes, workspace bookmarks/notes/cards and editors, page organizer, history/recovery, backup, offline study and help screens.
 
-## Final source checks
+- Compact layout: writing tools scroll horizontally instead of expanding into a tall column over the PDF. Reader toolbar actions retain accessible text while using compact icons. Page tools keep actions scrollable and counts vertically arranged. iOS annotation editing no longer imposes a desktop minimum window height.
+- Native behavior: history uses one scrolling List; workspace text/card editors use grouped Forms, initial field focus and keyboard shortcuts. Study allows interactive keyboard dismissal. PDF/Pencil gesture handling and editing services are unchanged.
+- States: backup imports use indeterminate progress, exports retain measured progress, stale status clears when work starts, and active backup work prevents swipe dismissal. Empty OCR results explain how to proceed. Comparison pagination disables unavailable directions and loading has a label.
+- Accessibility: thumbnail/page-selection controls announce their page and selection state; the annotation width slider has a label and value. Workspace errors use an icon and semantic foreground rather than color alone. Help now correctly names the Write on PDF shortcut.
+- Appearance: retained semantic backgrounds/text, light/dark/high-contrast accent assets and opaque Reduce Transparency chrome. Glass remains limited to compact controls. No hero copy or decorative large cards were added.
 
-- macOS native suite: **22 tests passed**, zero failures.
-- iPad Air 11-inch (M4), iOS 27.0 simulator: **27 tests passed**, zero failures.
-- macOS optimized Release archive: **passed**, universal arm64 and x86_64.
-- iOS device optimized Release archive: **passed**, arm64.
-- Both archives contain PrivacyInfo.xcprivacy and version 1.0.0, build 1. Project, manifest and entitlements pass property-list validation.
-- Swift formatting/lint: **passed** with the included project configuration. Compact functional forEach calls are permitted by that configuration.
-- Import/persistence/backup integration script: **passed**.
-- Annotation/OCR integration script: **passed**, including rotated/cropped coordinates, ink save/delete, undo/redo, failed-save rollback, internal link preservation, 1,000 deferred note updates, OCR cache/resume, searchable export, cancellation and bounded 120-page search.
-- Actual local AI service with network denied: **passed**. The available local system model produced verified source quotations with page 2 citations; an unsupported question produced no fabricated answer.
-- Extractive study with network denied: **passed** for summary, terms, cards, grounded/no-answer behavior, page scope and cancellation.
-- Streamed export/backup with network denied: **passed**, including a 100,003-byte drawing payload, PDF/notes preservation and compatible restore.
+Dynamic Type source verdict: **PASS** for SwiftUI text-style usage (no fixed-size text fonts or scaling clamps found). This does not certify every extreme-size/device combination; live largest-size and keyboard-open layout checks remain pending.
 
-## Regression coverage
+VoiceOver whole-app verdict: **FAIL** for release certification. SwiftUI control-label gaps found in this pass were fixed, but custom freehand PDF drawing surfaces still require a fully evaluated accessible interaction route and device testing. Native PDFKit/PencilKit behavior is not certified by the SwiftUI source audit.
 
-Native tests cover stale multi-window writes, pending Pencil history, erased stroke gaps, iOS save lifetime balancing, older-write rejection, mixed native/OCR search, source citations, stale OCR caches, streamed backups, startup safety and invalid model output. New coverage checks literal collection names, bounded cached covers, revision ordering and removal rollback. Failed removal preserves files and current notes; repeated removal preserves earlier recovery archives.
+Contrast verdict: **NEEDS VERIFICATION** for rendered glass, native PDF content and user-selected annotation colors. Semantic chrome and appearance-specific assets were reviewed, but no screenshot-based contrast or Accessibility Inspector measurement was performed this pass.
 
-## Interface review
+## Earlier evidence, not rerun on this source revision
 
-The current iPad simulator library was inspected in light and dark appearances, including a sample imported through the production library service. The iPhone 17e compact empty library was also inspected. This caught a crowded toolbar and redundant empty-state prompts; both were simplified and the suites rerun. Dark appearance review also led to stronger primary-button contrast and correct singular counts. The cover library, shared glass controls, floating dock and adaptive study controls are implemented. Dark/high-contrast color assets, Reduce Transparency and older-OS material fallbacks are included.
+Prior reports described a 10,000-page mixed-content PDF search (3.356 s cold / 0.076 s cached), a 10,000-page text fixture (2.513 s / 0.075 s), a 1,000-page OCR/index/export fixture, simulator tests, unsigned Release archives, and network-denied study/export checks. These are historical observations, not fresh results or guarantees for all PDFs. This pass leaves persistence, indexing, OCR budgets, thumbnail bounds and ink-save algorithms unchanged.
 
-Earlier sessions exercised sample import, reading and source-linked study in the Mac app. This final session could launch the Mac build but could not capture its window or operate Xcode's assistant because desktop automation access was unavailable. Do not treat that as a completed final Mac visual/VoiceOver audit. Physical hardware and all accessibility configurations still need release review.
+## Remaining release work
 
-## Tooling notes and boundaries
+- Physical iPhone/iPad testing, including Pencil pressure, tilt, palm rejection, double-tap/squeeze, zoom/pan and background-save completion.
+- Live VoiceOver, Full Keyboard Access, largest Dynamic Type, smallest supported window/device, light/dark, increased contrast and Reduce Transparency checks. No visual screenshots were generated or committed in this pass.
+- Fresh Release archives and minimum-OS/device testing, large/scanned-PDF memory/progress/cancellation checks, and integration-script reruns on the submission revision.
+- Owner: confirm production identity/team/bundle ID, sign and validate archives, TestFlight, publish reviewed privacy/support drafts, complete App Store metadata/privacy questionnaires and capture real submission screenshots.
 
-An initial iPad test bootstrap was interrupted while the simulator app was being installed for inspection. A clean rerun completed all 27 tests successfully. Xcode also emitted App Intents metadata notices, simulator OS-version parsing notices and system OCR/CoreText logs; no application-source compiler warnings or errors were reported in the final release archives.
-
-The archives are **unsigned verification artifacts**, not distribution builds. No signing identity was installed. Organizer validation, TestFlight, App Store upload/review, physical Pencil pressure/tilt/palm rejection/gestures, full VoiceOver review and minimum-OS device testing remain outstanding. See AppStore/RELEASE_READINESS.md for the owner handoff. No general-purpose chatbot, cloud sync or live iPhone-to-Mac drawing relay is claimed.
+See [release readiness](AppStore/RELEASE_READINESS.md). Privacy/support drafts are retained. No networking, API keys, sample PDF files, screenshots or build products were added to version control. Shell build outputs are ignored under `work/polish` in Downloads. Xcode tools manage their own temporary logs and test result bundles outside the repository.
