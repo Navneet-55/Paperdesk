@@ -1,0 +1,12 @@
+// Optional Release configuration. Attach to the app Release configuration only.
+// No developer identity or provisioning profile is supplied here.
+SWIFT_OPTIMIZATION_LEVEL = -O
+SWIFT_COMPILATION_MODE = wholemodule
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+ENABLE_TESTABILITY = NO
+ENABLE_HARDENED_RUNTIME[sdk=macosx*] = YES
+ENABLE_APP_SANDBOX[sdk=macosx*] = YES
+ENABLE_INCOMING_NETWORK_CONNECTIONS[sdk=macosx*] = NO
+ENABLE_OUTGOING_NETWORK_CONNECTIONS[sdk=macosx*] = NO
+ENABLE_USER_SELECTED_FILES[sdk=macosx*] = readwrite
+CODE_SIGN_ENTITLEMENTS[sdk=macosx*] = Paperdesk/Paperdesk-macOS.entitlements

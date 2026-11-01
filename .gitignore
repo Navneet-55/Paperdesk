@@ -1,0 +1,26 @@
+.DS_Store
+
+# Xcode local state and generated output
+xcuserdata/
+DerivedData/
+build/
+*.xcuserstate
+
+# Swift package and local tooling state
+.swiftpm/
+.build/
+
+# Local workspace artifacts and packaged binaries
+work/
+Paperdesk.app/
+*.xcarchive
+*.dSYM/
+
+# User library data
+*.pdf
+*.drawing
+*.ocr.json
+*.handwriting.json
+*.workspace.json
+*.inkpages/
+*.pageindex.sqlite
